@@ -405,7 +405,7 @@ psInitialize(void)
 	RsGlobal.ps = &PsGlobal;
 	
 	PsGlobal.fullScreen = FALSE;
-	PsGlobal.cursorIsInWindow = FALSE;
+	PsGlobal.cursorIsInWindow = TRUE;
 	WindowFocused = TRUE;
 	WindowIconified = FALSE;
 	
@@ -855,7 +855,8 @@ psSelectDevice()
 
 		if(bestFsMode < 0){
 			printf("WARNING: Cannot find desired video mode, selecting device cancelled\n");
-			return FALSE;
+			bestFsMode = 1;
+			RwEngineGetVideoModeInfo(&vm, bestFsMode);
 		}
 		GcurSelVM = bestFsMode;
 
