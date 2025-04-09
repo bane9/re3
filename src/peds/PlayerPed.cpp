@@ -36,12 +36,16 @@ CPlayerPed::~CPlayerPed()
 	delete m_pWanted;
 }
 
+#define STAMINA_BASE 150.0f
+#define STAMINA_MULT 3.0f
+#define STAMINA_VAL (STAMINA_BASE * STAMINA_MULT)
+
 CPlayerPed::CPlayerPed(void) : CPed(PEDTYPE_PLAYER1)
 {
 	m_fMoveSpeed = 0.0f;
 	SetModelIndex(MI_PLAYER);
 #ifdef FIX_BUGS
-	m_fCurrentStamina = m_fMaxStamina = 150.0f;
+	m_fCurrentStamina = m_fMaxStamina = STAMINA_VAL;
 #endif
 	SetInitialState();
 
@@ -55,7 +59,7 @@ CPlayerPed::CPlayerPed(void) : CPed(PEDTYPE_PLAYER1)
 	SetWeaponLockOnTarget(nil);
 	SetPedState(PED_IDLE);
 #ifndef FIX_BUGS
-	m_fCurrentStamina = m_fMaxStamina = 150.0f;
+	m_fCurrentStamina = m_fMaxStamina = STAMINA_VAL;
 #endif
 	m_fStaminaProgress = 0.0f;
 	m_nEvadeAmount = 0;
@@ -173,7 +177,7 @@ CPlayerPed::ReactivatePlayerPed(int32 index)
 void
 CPlayerPed::UseSprintEnergy(void)
 {
-	if (m_fCurrentStamina > -150.0f && !CWorld::Players[CWorld::PlayerInFocus].m_bInfiniteSprint
+	if (m_fCurrentStamina > -STAMINA_VAL && !CWorld::Players[CWorld::PlayerInFocus].m_bInfiniteSprint
 		&& !m_bAdrenalineActive) {
 		m_fCurrentStamina = m_fCurrentStamina - CTimer::GetTimeStep();
 		m_fStaminaProgress = m_fStaminaProgress + CTimer::GetTimeStep();
@@ -585,7 +589,7 @@ void
 CPlayerPed::PlayerControlSniper(CPad *padUsed)
 {
 	ProcessWeaponSwitch(padUsed);
-	TheCamera.PlayerExhaustion = (1.0f - (m_fCurrentStamina - -150.0f) / 300.0f) * 0.9f + 0.1f;
+	TheCamera.PlayerExhaustion = (1.0f - (m_fCurrentStamina - -STAMINA_VAL) / (STAMINA_VAL * 2)) * 0.9f + 0.1f;
 
 	if (!padUsed->GetTarget()) {
 		RestorePreviousState();
