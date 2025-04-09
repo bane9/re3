@@ -287,6 +287,16 @@ void StrongGripCheat()
 void NastyLimbsCheat()
 {
 	CPed::bNastyLimbsCheat = !CPed::bNastyLimbsCheat;
+
+	wchar msg[] = {
+		L'N', L'a', L's', L't', L'y', L' ',
+		L'L', L'i', L'm', L'b', L's', L' ',
+		L'C', L'h', L'e', L'a', L't', L' ', 
+		static_cast<wchar>(L'0' + CPed::bNastyLimbsCheat),
+		L'\0'
+	};
+	
+	CHud::SetHelpMessage(msg, true);
 }
 //////////////////////////////////////////////////////////////////////////
 
