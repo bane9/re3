@@ -1460,6 +1460,8 @@ void CGarages::PrintMessages()
 
 bool CGarages::IsCarSprayable(CVehicle * pVehicle)
 {
+	return true;
+
 	switch (pVehicle->GetModelIndex()) {
 	case MI_FIRETRUCK:
 	case MI_AMBULAN:
