@@ -272,7 +272,7 @@ CPlayerInfo::Process(void)
 			m_nUpsideDownCounter = 0;
 		}
 
-		if (m_nUpsideDownCounter > 6 && veh->bCanBeDamaged) {
+		if (false && m_nUpsideDownCounter > 6 && veh->bCanBeDamaged) {
 			veh->m_fHealth = 249.0f < veh->m_fHealth ? 249.0f : veh->m_fHealth;
 			if (veh->IsCar()) {
 				CAutomobile* car = (CAutomobile*)veh;
