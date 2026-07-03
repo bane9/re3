@@ -25,4 +25,8 @@ void CIniFile::LoadIniFile()
 	}
 	CPopulation::MaxNumberOfPedsInUse = DEFAULT_MAX_NUMBER_OF_PEDS * PedNumberMultiplier;
 	CCarCtrl::MaxNumberOfCarsInUse = DEFAULT_MAX_NUMBER_OF_CARS * CarNumberMultiplier;
+#ifdef PED_CAR_DENSITY_AREA_FACTOR
+	CPopulation::MaxNumberOfPedsInUse = (int32)(CPopulation::MaxNumberOfPedsInUse * PED_CAR_DENSITY_AREA_FACTOR);
+	CCarCtrl::MaxNumberOfCarsInUse = (int32)(CCarCtrl::MaxNumberOfCarsInUse * PED_CAR_DENSITY_AREA_FACTOR);
+#endif
 }

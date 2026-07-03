@@ -77,7 +77,11 @@ int32 CCarCtrl::NumRandomCars;
 int32 CCarCtrl::NumParkedCars;
 int32 CCarCtrl::NumPermanentCars;
 int8 CCarCtrl::CountDownToCarsAtStart;
+#ifdef PED_CAR_DENSITY_AREA_FACTOR
+int32 CCarCtrl::MaxNumberOfCarsInUse = (int32)(DEFAULT_MAX_NUMBER_OF_CARS * PED_CAR_DENSITY_AREA_FACTOR);
+#else
 int32 CCarCtrl::MaxNumberOfCarsInUse = DEFAULT_MAX_NUMBER_OF_CARS;
+#endif
 uint32 CCarCtrl::LastTimeLawEnforcerCreated;
 uint32 CCarCtrl::LastTimeFireTruckCreated;
 uint32 CCarCtrl::LastTimeAmbulanceCreated;
@@ -92,7 +96,11 @@ CCarCtrl::GenerateRandomCars()
 {
 	if (CCutsceneMgr::IsRunning())
 		return;
+#ifdef PED_CAR_DENSITY_AREA_FACTOR
+	if (NumRandomCars < 30 * PED_CAR_DENSITY_AREA_FACTOR){
+#else
 	if (NumRandomCars < 30){
+#endif
 		if (CountDownToCarsAtStart == 0){
 			GenerateOneRandomCar();
 		}
@@ -117,8 +125,13 @@ CCarCtrl::GenerateOneRandomCar()
 	CZoneInfo zone;
 	CTheZones::GetZoneInfoForTimeOfDay(&vecTargetPos, &zone);
 	pPlayer->m_nTrafficMultiplier = pPlayer->m_fRoadDensity * zone.carDensity;
+#ifdef PED_CAR_DENSITY_AREA_FACTOR
+	if (NumRandomCars >= pPlayer->m_nTrafficMultiplier * CarDensityMultiplier * CIniFile::CarNumberMultiplier * PED_CAR_DENSITY_AREA_FACTOR)
+		return;
+#else
 	if (NumRandomCars >= pPlayer->m_nTrafficMultiplier * CarDensityMultiplier * CIniFile::CarNumberMultiplier)
 		return;
+#endif
 	if (NumFiretrucksOnDuty + NumAmbulancesOnDuty + NumParkedCars + NumMissionCars + NumLawEnforcerCars + NumRandomCars >= MaxNumberOfCarsInUse)
 		return;
 	CWanted* pWanted = pPlayer->m_pPed->m_pWanted;

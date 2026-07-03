@@ -248,9 +248,15 @@ CVisibilityPlugins::SetRenderWareCamera(RwCamera *camera)
         ms_vehicleFadeDist = sq(100.0f * VEHICLE_LODDIST_MULTIPLIER);
         ms_bigVehicleLod0Dist = sq(60.0f * VEHICLE_LODDIST_MULTIPLIER);
         ms_bigVehicleLod1Dist = sq(150.0f * VEHICLE_LODDIST_MULTIPLIER);
+#ifdef PED_CAR_RENDER_DIST_MULT
+        ms_pedLod0Dist = sq(25.0f * TheCamera.LODDistMultiplier * PED_CAR_RENDER_DIST_MULT);
+        ms_pedLod1Dist = sq(60.0f * TheCamera.LODDistMultiplier * PED_CAR_RENDER_DIST_MULT);
+        ms_pedFadeDist = sq(70.0f * TheCamera.LODDistMultiplier * PED_CAR_RENDER_DIST_MULT);
+#else
         ms_pedLod0Dist = sq(25.0f * TheCamera.LODDistMultiplier);
         ms_pedLod1Dist = sq(60.0f * TheCamera.LODDistMultiplier);
         ms_pedFadeDist = sq(70.0f * TheCamera.LODDistMultiplier);
+#endif
 }
 
 RpMaterial*

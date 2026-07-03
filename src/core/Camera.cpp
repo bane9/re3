@@ -729,6 +729,9 @@ CCamera::Process(void)
 	GenerationDistMultiplier = LODDistMultiplier;
 	LODDistMultiplier *= CRenderer::ms_lodDistScale;
 #endif
+#ifdef PED_CAR_RENDER_DIST_MULT
+	GenerationDistMultiplier *= PED_CAR_RENDER_DIST_MULT;
+#endif
 
 	// Keep track of speed
 	if(m_bJustInitalised || m_bJust_Switched){
