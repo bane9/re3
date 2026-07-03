@@ -5763,7 +5763,11 @@ CMenuManager::SwitchMenuOnAndOff()
 		
 		// In case we're windowed, keep mouse centered while in game. Done in main.cpp in other conditions.
 #if defined(RW_GL3) && defined(IMPROVED_VIDEOMODE)
+#ifdef BORDERLESS_FULLSCREEN
+		glfwSetInputMode(PSGLOBAL(window), GLFW_CURSOR, m_bMenuActive ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_DISABLED);
+#else
 		glfwSetInputMode(PSGLOBAL(window), GLFW_CURSOR, m_bMenuActive && m_nPrefsWindowed ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_DISABLED);
+#endif
 #endif
 	}
 

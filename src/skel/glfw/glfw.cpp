@@ -869,6 +869,20 @@ psSelectDevice()
 	RwEngineGetVideoModeInfo(&vm, GcurSelVM);
 
 #ifdef IMPROVED_VIDEOMODE
+#ifdef BORDERLESS_FULLSCREEN
+	GcurSelVM = bestWndMode;
+
+	if (!FrontEndMenuManager.m_nPrefsWindowed) {
+		const GLFWvidmode *desktop = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		FrontEndMenuManager.m_nPrefsWidth = desktop->width;
+		FrontEndMenuManager.m_nPrefsHeight = desktop->height;
+		FrontEndMenuManager.m_nPrefsDepth = 32;
+	} else {
+		FrontEndMenuManager.m_nPrefsWidth = vm.width;
+		FrontEndMenuManager.m_nPrefsHeight = vm.height;
+		FrontEndMenuManager.m_nPrefsDepth = vm.depth;
+	}
+#else
 	if (FrontEndMenuManager.m_nPrefsWindowed)
 		GcurSelVM = bestWndMode;
 
@@ -876,6 +890,7 @@ psSelectDevice()
 	FrontEndMenuManager.m_nPrefsWidth = vm.width;
 	FrontEndMenuManager.m_nPrefsHeight = vm.height;
 	FrontEndMenuManager.m_nPrefsDepth = vm.depth;
+#endif
 #endif
 
 #ifndef PS2_MENU
@@ -1042,6 +1057,20 @@ void psPostRWinit(void)
 
 	if(!(vm.flags & rwVIDEOMODEEXCLUSIVE))
 		glfwSetWindowSize(PSGLOBAL(window), RsGlobal.maximumWidth, RsGlobal.maximumHeight);
+
+#ifdef BORDERLESS_FULLSCREEN
+	if(!FrontEndMenuManager.m_nPrefsWindowed){
+		GLFWmonitor *mon = glfwGetPrimaryMonitor();
+		const GLFWvidmode *dm = glfwGetVideoMode(mon);
+		int mx, my;
+		glfwGetMonitorPos(mon, &mx, &my);
+		glfwSetWindowAttrib(PSGLOBAL(window), GLFW_DECORATED, GLFW_FALSE);
+		glfwSetWindowAttrib(PSGLOBAL(window), GLFW_FLOATING, GLFW_FALSE);
+		glfwSetWindowMonitor(PSGLOBAL(window), nil, mx, my, dm->width, dm->height + 1, GLFW_DONT_CARE);
+	}else{
+		glfwSetWindowAttrib(PSGLOBAL(window), GLFW_DECORATED, GLFW_TRUE);
+	}
+#endif
 
 	// Make sure all keys are released
 	CPad::GetPad(0)->Clear(true);
@@ -1812,8 +1841,8 @@ cursorCB(GLFWwindow* window, double xpos, double ypos) {
 	
 	int winw, winh;
 	glfwGetWindowSize(PSGLOBAL(window), &winw, &winh);
-	FrontEndMenuManager.m_nMouseTempPosX = xpos * (RsGlobal.maximumWidth / winw);
-	FrontEndMenuManager.m_nMouseTempPosY = ypos * (RsGlobal.maximumHeight / winh);
+	FrontEndMenuManager.m_nMouseTempPosX = xpos * ((float)RsGlobal.maximumWidth / winw);
+	FrontEndMenuManager.m_nMouseTempPosY = ypos * ((float)RsGlobal.maximumHeight / winh);
 }
 
 void

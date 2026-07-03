@@ -324,6 +324,9 @@ enum Config {
 #define USE_TXD_CDIMAGE		// generate and load textures from txd.img
 #define PS2_ALPHA_TEST		// emulate ps2 alpha test 
 #define IMPROVED_VIDEOMODE	// save and load videomode parameters instead of a magic number
+#if defined RW_GL3 && !defined LIBRW_SDL2
+#define BORDERLESS_FULLSCREEN
+#endif
 #define DISABLE_LOADING_SCREEN // disable the loading screen which vastly improves the loading time
 #ifdef DISABLE_LOADING_SCREEN
 // enable the PC splash
