@@ -4,6 +4,10 @@
 #ifdef __MWERKS__
 #define VANILLA_DEFINES
 #endif
+#define FULL_LOD_WORLD
+#ifdef FULL_LOD_WORLD
+#define FULL_LOD_FARCLIP 3000.0f
+#endif
 
 enum Config {
 	NUMPLAYERS = 1,	// 4 on PS2
@@ -122,8 +126,15 @@ enum Config {
 
 	NUMROADBLOCKS = 600,
 
+#ifdef FULL_LOD_WORLD
+	// big enough to hold every building/dummy/treadable of all three islands at once
+	// (see NUMBUILDINGS/NUMDUMMIES/NUMTREADABLES above)
+	NUMVISIBLEENTITIES = 20000,
+	NUMINVISIBLEENTITIES = 4000,
+#else
 	NUMVISIBLEENTITIES = 2000,
 	NUMINVISIBLEENTITIES = 150,
+#endif
 
 	NUM_AUDIOENTITY_EVENTS = 4,
 	NUM_PED_COMMENTS_SLOTS = 20,

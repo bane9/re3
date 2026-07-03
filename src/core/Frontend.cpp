@@ -138,7 +138,11 @@ int8 CMenuManager::m_nDisplayMSAALevel = 0;
 #endif
 
 #ifdef NO_ISLAND_LOADING
+#ifdef FULL_LOD_WORLD
+int8 CMenuManager::m_PrefsIslandLoading = ISLAND_LOADING_HIGH;
+#else
 int8 CMenuManager::m_PrefsIslandLoading = ISLAND_LOADING_LOW;
+#endif
 #endif
 
 #ifdef GAMEPAD_MENU

@@ -195,6 +195,12 @@ ValidateVersion()
 	}
 }
 
+#ifdef FULL_LOD_WORLD
+#define GAME_FARCLIP() Max(CTimeCycle::GetFarClip(), FULL_LOD_FARCLIP)
+#else
+#define GAME_FARCLIP() CTimeCycle::GetFarClip()
+#endif
+
 bool
 DoRWStuffStartOfFrame(int16 TopRed, int16 TopGreen, int16 TopBlue, int16 BottomRed, int16 BottomGreen, int16 BottomBlue, int16 Alpha)
 {
@@ -1662,7 +1668,7 @@ Idle(void *arg)
 #ifdef FIX_BUGS
 		RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void *)FALSE); // TODO: temp? this fixes OpenGL render but there should be a better place for this
 		// This has to be done BEFORE RwCameraBeginUpdate
-		RwCameraSetFarClipPlane(Scene.camera, CTimeCycle::GetFarClip());
+		RwCameraSetFarClipPlane(Scene.camera, GAME_FARCLIP());
 		RwCameraSetFogDistance(Scene.camera, CTimeCycle::GetFogStart());
 #endif
 
@@ -1679,7 +1685,7 @@ Idle(void *arg)
 		DefinedState();
 
 #ifndef FIX_BUGS
-		RwCameraSetFarClipPlane(Scene.camera, CTimeCycle::GetFarClip());
+		RwCameraSetFarClipPlane(Scene.camera, GAME_FARCLIP());
 		RwCameraSetFogDistance(Scene.camera, CTimeCycle::GetFogStart());
 #endif
 
@@ -2008,7 +2014,7 @@ void TheGame(void)
 
 #ifdef FIX_BUGS
 				// This has to be done BEFORE RwCameraBeginUpdate
-				RwCameraSetFarClipPlane(Scene.camera, CTimeCycle::GetFarClip());
+				RwCameraSetFarClipPlane(Scene.camera, GAME_FARCLIP());
 				RwCameraSetFogDistance(Scene.camera, CTimeCycle::GetFogStart());
 #endif
 
@@ -2019,7 +2025,7 @@ void TheGame(void)
 
 				DefinedState();
 #ifndef FIX_BUGS
-				RwCameraSetFarClipPlane(Scene.camera, CTimeCycle::GetFarClip());
+				RwCameraSetFarClipPlane(Scene.camera, GAME_FARCLIP());
 				RwCameraSetFogDistance(Scene.camera, CTimeCycle::GetFogStart());
 #endif
 

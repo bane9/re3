@@ -128,10 +128,16 @@ CSimpleModelInfo::GetAtomicFromDistance(float dist)
 	i = 0;
 	if(m_isDamaged)
 		i = m_firstDamaged;
+#ifdef FULL_LOD_WORLD
+	if(i < m_numAtomics)
+		return m_atomics[i];
+	return nil;
+#else
 	for(; i < m_numAtomics; i++)
 		if(dist < m_lodDistances[i] * TheCamera.LODDistMultiplier)
 			return m_atomics[i];
 	return nil;
+#endif
 }
 
 void

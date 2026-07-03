@@ -223,6 +223,9 @@ CStreaming::Init2(void)
 	ms_memoryAvailable = (_dwMemAvailPhys - 10*MB)/2;
 	if(ms_memoryAvailable < 50*MB)
 		ms_memoryAvailable = 50*MB;
+#ifdef FULL_LOD_WORLD
+	ms_memoryAvailable = _dwMemAvailPhys > 20*(size_t)MB ? _dwMemAvailPhys - 20*(size_t)MB : 50*MB;
+#endif
 	desiredNumVehiclesLoaded = (int32)((ms_memoryAvailable / MB - 50) / 3 + 12);
 	if(desiredNumVehiclesLoaded > MAXVEHICLESLOADED)
 		desiredNumVehiclesLoaded = MAXVEHICLESLOADED;

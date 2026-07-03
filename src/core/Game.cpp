@@ -67,6 +67,10 @@
 #include "Streaming.h"
 #include "SurfaceTable.h"
 #include "TempColModels.h"
+#ifdef FULL_LOD_WORLD
+#include "Pools.h"
+#include "Building.h"
+#endif
 #include "Timecycle.h"
 #include "TrafficLights.h"
 #include "Train.h"
@@ -545,8 +549,26 @@ bool CGame::Initialise(const char* datFile)
 	CStreaming::Init();
 	CStreaming::LoadInitialVehicles();
 	CStreaming::LoadInitialPeds();
+#ifdef FULL_LOD_WORLD
+	CMenuManager::m_PrefsIslandLoading = CMenuManager::ISLAND_LOADING_HIGH;
+	if(currLevel != LEVEL_INDUSTRIAL) CFileLoader::LoadCollisionFromDatFile(LEVEL_INDUSTRIAL);
+	if(currLevel != LEVEL_COMMERCIAL) CFileLoader::LoadCollisionFromDatFile(LEVEL_COMMERCIAL);
+	if(currLevel != LEVEL_SUBURBAN)   CFileLoader::LoadCollisionFromDatFile(LEVEL_SUBURBAN);
+	CCollision::bAlreadyLoaded = true;
+	{
+		int n = CPools::GetBuildingPool()->GetSize();
+		for(int i = 0; i < n; i++){
+			CBuilding *b = CPools::GetBuildingPool()->GetSlot(i);
+			if(b)
+				CStreaming::RequestModel(b->GetModelIndex(), 0);
+		}
+	}
+#endif
 	CStreaming::RequestBigBuildings(LEVEL_GENERIC);
 	CStreaming::LoadAllRequestedModels(false);
+#ifdef FULL_LOD_WORLD
+	CStreaming::RemoveIslandsNotUsed(LEVEL_GENERIC);
+#endif
 #if GTA_VERSION > GTA3_PS2_160
 	printf("Streaming uses %zuK of its memory", CStreaming::ms_memoryUsed / 1024); // original modifier was %d
 #endif
