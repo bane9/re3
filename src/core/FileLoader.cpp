@@ -1708,7 +1708,7 @@ CFileLoader::ReloadPaths(const char *filename)
 		if (section == NONE) {
 			if (isLine4(line, 'p','a','t','h')) {
 				section = PATH;
-				ThePaths.AllocatePathFindInfoMem(4500);
+				ThePaths.AllocatePathFindInfoMem(PATHNODESIZE);
 			}
 		} else if (isLine3(line, 'e','n','d')) {
 			section = NONE;

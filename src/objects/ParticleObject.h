@@ -4,7 +4,7 @@
 #include "ParticleType.h"
 #include "Placeable.h"
 
-#define MAX_PARTICLEOBJECTS 100
+#define MAX_PARTICLEOBJECTS 2000
 #define MAX_AUDIOHYDRANTS   8
 
 enum eParticleObjectType

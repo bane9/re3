@@ -337,6 +337,12 @@ void re3_trace(const char *filename, unsigned int lineno, const char *func, cons
 void re3_assert(const char *expr, const char *filename, unsigned int lineno, const char *func);
 void re3_usererror(const char *format, ...);
 
+extern bool gLoadTest;
+void LoadTestLog(const char *fmt, ...);
+void LoadTestFinish(const char *status);
+void LoadTestInstallCrashHandler(void);
+void CrashLog(const char *fmt, ...);
+
 #define DEBUGBREAK() __debugbreak();
 
 // Switch to enable development messages.

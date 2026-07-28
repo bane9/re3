@@ -1,5 +1,20 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdarg.h>
+
+inline void PoolProblemLog(const char *fmt, ...)
+{
+	va_list va;
+	FILE *f = fopen("re3_pool_problems.log", "a");
+	if(f == nil)
+		return;
+	va_start(va, fmt);
+	vfprintf(f, fmt, va);
+	va_end(va);
+	fclose(f);
+}
+
 template<typename T, int32 n>
 class CStore
 {
@@ -10,6 +25,7 @@ public:
 	T *Alloc(void){
 		if(allocPtr >= n){
 			printf("Size of this thing:%d needs increasing\n", n);
+			PoolProblemLog("CStore full: %d entries of %d bytes needs increasing\n", n, (int)sizeof(T));
 			assert(0);
 		}
 		return &store[allocPtr++];
@@ -54,21 +70,29 @@ public:
 
 	int GetId(int i) const
 	{
+		if(i < 0 || i >= m_size)
+			return 0;
 		return m_flags[i] & POOLFLAG_ID;
 	}
 
 	bool GetIsFree(int i) const
 	{
+		if(i < 0 || i >= m_size)
+			return true;
 		return !!(m_flags[i] & POOLFLAG_ISFREE);
 	}
 
 	void SetId(int i, int id)
 	{
+		if(i < 0 || i >= m_size)
+			return;
 		m_flags[i] = (m_flags[i] & POOLFLAG_ISFREE) | (id & POOLFLAG_ID);
 	}
 
 	void SetIsFree(int i, bool isFree)
 	{
+		if(i < 0 || i >= m_size)
+			return;
 		if (isFree)
 			m_flags[i] |= POOLFLAG_ISFREE;
 		else
@@ -127,16 +151,22 @@ public:
 	}
 	void Delete(T *entry){
 		int i = GetJustIndex(entry);
+		if(i < 0)
+			return;
 		SetIsFree(i, true);
 		if(i < m_allocPtr)
 			m_allocPtr = i;
 	}
 	T *GetSlot(int i){
+		if(i < 0 || i >= m_size)
+			return nil;
 		return GetIsFree(i) ? nil : (T*)&m_entries[i];
 	}
 	T *GetAt(int handle){
 #ifdef FIX_BUGS
 		if (handle == -1)
+			return nil;
+		if ((handle>>8) < 0 || (handle>>8) >= m_size)
 			return nil;
 #endif
 		return m_flags[handle>>8] == (handle & 0xFF) ?
@@ -144,16 +174,24 @@ public:
 	}
 	int32 GetIndex(T *entry){
 		int i = GetJustIndex_NoFreeAssert(entry);
+		if(i < 0)
+			return -1;
 		return m_flags[i] + (i<<8);
 	}
 	int32 GetJustIndex(T *entry){
 		int index = GetJustIndex_NoFreeAssert(entry);
+		if(index < 0)
+			return -1;
 		assert(!GetIsFree(index));
 		return index;
 	}
 	int32 GetJustIndex_NoFreeAssert(T* entry){
 		int index = ((U*)entry - m_entries);
-		assert((U*)entry == (U*)&m_entries[index]); // cast is unsafe - check required
+		if(index < 0 || index >= m_size || (U*)entry != (U*)&m_entries[index]){
+			PoolProblemLog("CPool: pointer %p is not a pool entry (base %p, %d entries of %d bytes)\n",
+				(void*)entry, (void*)m_entries, m_size, (int)sizeof(U));
+			return -1;
+		}
 		return index;
 	}
 	int32 GetNoOfUsedSpaces(void) const{

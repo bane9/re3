@@ -1136,8 +1136,7 @@ int8 CRunningScript::ProcessCommands1100To1199(int32 command)
 		char zone[KEY_LENGTH_IN_SCRIPT];
 		strncpy(zone, (const char*)&CTheScripts::ScriptSpace[m_nIp], KEY_LENGTH_IN_SCRIPT);
 		int nZone = CTheZones::FindZoneByLabelAndReturnIndex(zone);
-		if (nZone != -1)
-			m_nIp += KEY_LENGTH_IN_SCRIPT;
+		m_nIp += KEY_LENGTH_IN_SCRIPT;
 		CZone* pZone = CTheZones::GetZone(nZone);
 		int ped_handle = -1;
 		CVector pos = FindPlayerCoors();

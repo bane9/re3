@@ -44,8 +44,10 @@ long _dwOperatingSystemVersion;
 #include "DMAudio.h"
 #include "ControllerConfig.h"
 #include "Frontend.h"
+#include "Heli.h"
 #include "Game.h"
 #include "PCSave.h"
+#include "GenericGameStorage.h"
 #include "MemoryCard.h"
 #include "Sprite2d.h"
 #include "AnimViewer.h"
@@ -1984,8 +1986,12 @@ main(int argc, char *argv[])
 	 * Parse command line parameters (except program name) one at 
 	 * a time AFTER RenderWare initialization...
 	 */
+	LoadTestInstallCrashHandler();
+
 	for(i=1; i<argc; i++)
 	{
+		if(strcmp(argv[i], "-loadtest") == 0)
+			gLoadTest = true;
 		RsEventHandler(rsCOMMANDLINE, argv[i]);
 	}
 
@@ -2235,9 +2241,16 @@ main(int argc, char *argv[])
 					case GS_INIT_FRONTEND:
 					{
 						LoadingScreen(nil, nil, "loadsc0");
-						
+
 						FrontEndMenuManager.m_bGameNotLoaded = true;
-						
+
+						if ( gLoadTest )
+						{
+							LoadTestLog("LOADTEST START\n");
+							gGameState = GS_INIT_PLAYING_GAME;
+							break;
+						}
+
 						CMenuManager::m_bStartUpFrontEndRequested = true;
 						
 						if ( defaultFullscreenRes )
@@ -2313,6 +2326,8 @@ main(int argc, char *argv[])
 #endif
 						gGameState = GS_PLAYING_GAME;
 						TRACE("gGameState = GS_PLAYING_GAME;");
+						if ( gLoadTest )
+							LoadTestLog("LOADTEST INIT OK\n");
 						break;
 					}
 					
@@ -2323,6 +2338,28 @@ main(int argc, char *argv[])
 						{
 							if (!CMenuManager::m_PrefsFrameLimiter || (1000.0f / (float)RsGlobal.maxFPS) < ms)
 								RsEventHandler(rsIDLE, (void *)TRUE);
+						}
+						if ( gLoadTest )
+						{
+							static int loadTestFrames = 0;
+							if ( ++loadTestFrames == 1 )
+								LoadTestLog("LOADTEST FIRST FRAME OK\n");
+							if ( loadTestFrames == 600 )
+							{
+								LoadTestLog("LOADTEST SAVING\n");
+								if ( PcSaveHelper.SaveSlot(SLOT_COUNT-1) )
+								{
+										LoadTestLog("LOADTEST SAVE OK name=%s\n", ValidSaveName);
+									if ( CheckSlotDataValid(SLOT_COUNT-1) )
+										LoadTestLog("LOADTEST SAVE VERIFIED\n");
+									else
+										LoadTestLog("LOADTEST SAVE INVALID\n");
+								}
+								else
+									LoadTestLog("LOADTEST SAVE FAILED code=%d\n", (int)PcSaveHelper.nErrorCode);
+							}
+							if ( loadTestFrames >= 610 )
+								LoadTestFinish("LOADTEST OK");
 						}
 						break;
 					}

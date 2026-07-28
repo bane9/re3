@@ -18,7 +18,8 @@ struct GlobalScene
 };
 extern GlobalScene Scene;
 
-extern uint8 work_buff[55000];
+#define WORK_BUFF_SIZE (1024*1024)
+extern uint8 work_buff[WORK_BUFF_SIZE];
 extern char gString[256];
 extern char gString2[512];
 extern wchar gUString[256];

@@ -41,7 +41,7 @@
 #define BLOCK_COUNT 20
 #define SIZE_OF_SIMPLEVARS 0xBC
 
-const uint32 SIZE_OF_ONE_GAME_IN_BYTES = 201729;
+const uint32 SIZE_OF_ONE_GAME_IN_BYTES = 600000;
 
 #ifdef MISSION_REPLAY
 int8 IsQuickSave;
@@ -219,6 +219,16 @@ GenericSave(int file)
 	WriteSaveDataBlock(CStats::SaveStats);
 	WriteSaveDataBlock(CStreaming::MemoryCardSave);
 	WriteSaveDataBlock(CPedType::Save);
+
+	if (gLoadTest)
+		LoadTestLog("LOADTEST SAVE DATA BYTES=%u limit=%u\n", (unsigned)totalSize, (unsigned)SIZE_OF_ONE_GAME_IN_BYTES);
+
+	if (totalSize + sizeof(uint32) > SIZE_OF_ONE_GAME_IN_BYTES) {
+		PoolProblemLog("save data %u bytes exceeds SIZE_OF_ONE_GAME_IN_BYTES (%u), needs increasing\n",
+			(unsigned)totalSize, (unsigned)SIZE_OF_ONE_GAME_IN_BYTES);
+		PcSaveHelper.nErrorCode = SAVESTATUS_ERR_SAVE_WRITE;
+		return false;
+	}
 
 	// sure just write garbage data repeatedly ...
 #ifndef THIS_IS_STUPID
@@ -640,6 +650,10 @@ do { \
 #define SkipBoth(from, to, size) to += (size); from += (size)
 #define SkipPtr(from, to) to += 4; from += 8
 
+#define ORIGINAL_NUMZONES 50
+#define ORIGINAL_NUMMAPZONES 25
+#define ORIGINAL_NUMPHONES 50
+
 // unfortunately we need a 2nd buffer of the same size to store the fixed output ...
 static uint8 work_buff2[sizeof(work_buff)];
 
@@ -884,7 +898,7 @@ FixPhoneInfo(uint8 save_type, uint8 *buf, uint8 *buf2, uint32 *size)
 
 	CopyBuf(buf, buf2, 4 + 4);
 
-	for (int32 i = 0; i < NUMPHONES; i++)
+	for (int32 i = 0; i < ORIGINAL_NUMPHONES; i++)
 	{
 		CopyBuf(buf, buf2, sizeof(CVector));
 		SkipBuf(buf, 4);
@@ -935,13 +949,13 @@ do { \
 	CopyPtr(buf, buf2); \
 } while(0)
 
-	for (int32 i = 0; i < NUMZONES; i++)
+	for (int32 i = 0; i < ORIGINAL_NUMZONES; i++)
 		FixOneZone(buf, buf2);
 
-	CopyBuf(buf, buf2, sizeof(CZoneInfo) * NUMZONES * 2);
+	CopyBuf(buf, buf2, sizeof(CZoneInfo) * ORIGINAL_NUMZONES * 2);
 	CopyBuf(buf, buf2, 2 + 2);
 
-	for (int32 i = 0; i < NUMMAPZONES; i++)
+	for (int32 i = 0; i < ORIGINAL_NUMMAPZONES; i++)
 		FixOneZone(buf, buf2);
 
 	CopyBuf(buf, buf2, 2 * NUMAUDIOZONES);

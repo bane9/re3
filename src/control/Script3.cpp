@@ -1812,8 +1812,7 @@ int8 CRunningScript::ProcessCommands700To799(int32 command)
 		char zone[KEY_LENGTH_IN_SCRIPT];
 		strncpy(zone, (const char*)&CTheScripts::ScriptSpace[m_nIp], KEY_LENGTH_IN_SCRIPT);
 		int nZone = CTheZones::FindZoneByLabelAndReturnIndex(zone);
-		if (nZone != -1)
-			m_nIp += KEY_LENGTH_IN_SCRIPT;
+		m_nIp += KEY_LENGTH_IN_SCRIPT;
 		CZone* pZone = CTheZones::GetZone(nZone);
 		int ped_handle = -1;
 		CVector pos = FindPlayerCoors();
@@ -1920,7 +1919,7 @@ int8 CRunningScript::ProcessCommands700To799(int32 command)
 	{
 		CollectParameters(&m_nIp, 1);
 		CCutsceneObject* pCutObj = CCutsceneMgr::CreateCutsceneObject(ScriptParams[0]);
-		ScriptParams[0] = CPools::GetObjectPool()->GetIndex(pCutObj);
+		ScriptParams[0] = pCutObj ? CPools::GetObjectPool()->GetIndex(pCutObj) : -1;
 		StoreParameters(&m_nIp, 1);
 		return 0;
 	}
@@ -1929,10 +1928,10 @@ int8 CRunningScript::ProcessCommands700To799(int32 command)
 		CollectParameters(&m_nIp, 1);
 		char name[KEY_LENGTH_IN_SCRIPT];
 		CObject* pObject = CPools::GetObjectPool()->GetAt(ScriptParams[0]);
-		script_assert(pObject);
 		strncpy(name, (const char*)&CTheScripts::ScriptSpace[m_nIp], KEY_LENGTH_IN_SCRIPT);
 		m_nIp += KEY_LENGTH_IN_SCRIPT;
-		CCutsceneMgr::SetCutsceneAnim(name, pObject);
+		if (pObject)
+			CCutsceneMgr::SetCutsceneAnim(name, pObject);
 		return 0;
 	}
 	case COMMAND_START_CUTSCENE:
@@ -2057,9 +2056,8 @@ int8 CRunningScript::ProcessCommands700To799(int32 command)
 	{
 		CollectParameters(&m_nIp, 2);
 		CObject* pObject = CPools::GetObjectPool()->GetAt(ScriptParams[0]);
-		script_assert(pObject);
-		CCutsceneHead* pCutHead = CCutsceneMgr::AddCutsceneHead(pObject, ScriptParams[1]);
-		ScriptParams[0] = CPools::GetObjectPool()->GetIndex(pCutHead);
+		CCutsceneHead* pCutHead = pObject ? CCutsceneMgr::AddCutsceneHead(pObject, ScriptParams[1]) : nil;
+		ScriptParams[0] = pCutHead ? CPools::GetObjectPool()->GetIndex(pCutHead) : -1;
 		StoreParameters(&m_nIp, 1);
 		return 0;
 	}
@@ -2067,13 +2065,14 @@ int8 CRunningScript::ProcessCommands700To799(int32 command)
 	{
 		CollectParameters(&m_nIp, 1);
 		CObject* pCutHead = CPools::GetObjectPool()->GetAt(ScriptParams[0]);
-		script_assert(pCutHead);
 		char name[KEY_LENGTH_IN_SCRIPT];
 		strncpy(name, (const char*)&CTheScripts::ScriptSpace[m_nIp], KEY_LENGTH_IN_SCRIPT);
 		m_nIp += KEY_LENGTH_IN_SCRIPT;
-		CTimer::Stop();
-		CCutsceneMgr::SetHeadAnim(name, pCutHead);
-		CTimer::Update();
+		if (pCutHead) {
+			CTimer::Stop();
+			CCutsceneMgr::SetHeadAnim(name, pCutHead);
+			CTimer::Update();
+		}
 		return 0;
 	}
 	case COMMAND_SIN:

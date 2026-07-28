@@ -387,6 +387,11 @@ CCullZones::AddCullZone(CVector const &position,
 
 	CVector v;
 	if((flag & ATTRZONE_NOTCULLZONE) == 0){
+		if(NumCullZones >= NUMCULLZONES){
+			printf("NUMCULLZONES (%d) needs increasing\n", NUMCULLZONES);
+			assert(0);
+			return;
+		}
 		cull = &aZones[NumCullZones++];
 		v = position;
 		// reposition start point to the start/end of the
@@ -411,6 +416,11 @@ CCullZones::AddCullZone(CVector const &position,
 		cull->m_indexStart = 0;
 	}
 	if(flag & ~ATTRZONE_NOTCULLZONE){
+		if(NumAttributeZones >= NUMATTRIBZONES){
+			printf("NUMATTRIBZONES (%d) needs increasing\n", NUMATTRIBZONES);
+			assert(0);
+			return;
+		}
 		attrib = &aAttributeZones[NumAttributeZones++];
 		attrib->minx = minx;
 		attrib->maxx = maxx;

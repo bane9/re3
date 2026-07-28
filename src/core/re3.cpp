@@ -21,6 +21,7 @@
 #include "PathFind.h"
 #include "Boat.h"
 #include "Heli.h"
+#include "CarGen.h"
 #include "Automobile.h"
 #include "Console.h"
 #include "Debug.h"
@@ -45,6 +46,9 @@
 #include "Population.h"
 #include "IniFile.h"
 #include "Zones.h"
+#include "Pools.h"
+#include "ZoneCull.h"
+#include "ModelInfo.h"
 
 #include "crossplatform.h"
 
@@ -1110,9 +1114,135 @@ const int   re3_buffsize = 1024;
 static char re3_buff[re3_buffsize];
 #endif
 
+bool gLoadTest;
+
+void CrashLog(const char *fmt, ...)
+{
+	va_list va;
+	FILE *f = fopen("re3_crash.log", "a");
+	if(f == nil)
+		return;
+	va_start(va, fmt);
+	vfprintf(f, fmt, va);
+	va_end(va);
+	fclose(f);
+}
+
+void LoadTestLog(const char *fmt, ...)
+{
+	va_list va;
+	FILE *f = fopen("re3_loadtest.log", "a");
+	if(f == nil)
+		return;
+	va_start(va, fmt);
+	vfprintf(f, fmt, va);
+	va_end(va);
+	fclose(f);
+}
+
+void LoadTestReport(void)
+{
+	LoadTestLog("2dfx           %6d / %6d\n", CModelInfo::Get2dEffectStore().allocPtr, TWODFXSIZE);
+	LoadTestLog("buildings      %6d / %6d\n", CPools::GetBuildingPool()->GetNoOfUsedSpaces(), CPools::GetBuildingPool()->GetSize());
+	LoadTestLog("treadables     %6d / %6d\n", CPools::GetTreadablePool()->GetNoOfUsedSpaces(), CPools::GetTreadablePool()->GetSize());
+	LoadTestLog("dummies        %6d / %6d\n", CPools::GetDummyPool()->GetNoOfUsedSpaces(), CPools::GetDummyPool()->GetSize());
+	LoadTestLog("objects        %6d / %6d\n", CPools::GetObjectPool()->GetNoOfUsedSpaces(), CPools::GetObjectPool()->GetSize());
+	LoadTestLog("ptrnodes       %6d / %6d\n", CPools::GetPtrNodePool()->GetNoOfUsedSpaces(), CPools::GetPtrNodePool()->GetSize());
+	LoadTestLog("entryinfos     %6d / %6d\n", CPools::GetEntryInfoNodePool()->GetNoOfUsedSpaces(), CPools::GetEntryInfoNodePool()->GetSize());
+	LoadTestLog("mapobjects     %6d / %6d\n", ThePaths.m_numMapObjects, NUM_MAPOBJECTS);
+	LoadTestLog("pathnodes      %6d / %6d\n", ThePaths.m_numPathNodes, NUM_PATHNODES);
+	LoadTestLog("carpathlinks   %6d / %6d\n", ThePaths.m_numCarPathLinks, NUM_CARPATHLINKS);
+	LoadTestLog("pathconns      %6d / %6d\n", ThePaths.m_numConnections, NUM_PATHCONNECTIONS);
+	LoadTestLog("cullzones      %6d / %6d\n", CCullZones::NumCullZones, NUMCULLZONES);
+	LoadTestLog("attribzones    %6d / %6d\n", CCullZones::NumAttributeZones, NUMATTRIBZONES);
+	LoadTestLog("zoneindices    %6d / %6d\n", CCullZones::EntityIndicesUsed, NUMZONEINDICES);
+}
+
+#ifdef _WIN32
+#include <dbghelp.h>
+#pragma comment(lib, "dbghelp.lib")
+
+static LONG WINAPI LoadTestExceptionFilter(EXCEPTION_POINTERS *ep)
+{
+	HANDLE proc = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+	DWORD64 disp;
+	char symbuf[sizeof(SYMBOL_INFO) + 512];
+	SYMBOL_INFO *sym = (SYMBOL_INFO*)symbuf;
+	CONTEXT ctx = *ep->ContextRecord;
+	STACKFRAME64 frame;
+	int depth;
+
+	CrashLog("CRASH code=%08X addr=%p\n",
+		(unsigned)ep->ExceptionRecord->ExceptionCode, ep->ExceptionRecord->ExceptionAddress);
+	if(ep->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
+		CrashLog("  access %s at %p\n",
+			ep->ExceptionRecord->ExceptionInformation[0] ? "write" : "read",
+			(void*)ep->ExceptionRecord->ExceptionInformation[1]);
+
+	SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
+	SymInitialize(proc, nil, TRUE);
+
+	memset(&frame, 0, sizeof(frame));
+	frame.AddrPC.Offset = ctx.Rip;
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Offset = ctx.Rbp;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Offset = ctx.Rsp;
+	frame.AddrStack.Mode = AddrModeFlat;
+
+	for(depth = 0; depth < 24; depth++){
+		if(!StackWalk64(IMAGE_FILE_MACHINE_AMD64, proc, thread, &frame, &ctx, nil,
+				SymFunctionTableAccess64, SymGetModuleBase64, nil))
+			break;
+		if(frame.AddrPC.Offset == 0)
+			break;
+		memset(symbuf, 0, sizeof(symbuf));
+		sym->SizeOfStruct = sizeof(SYMBOL_INFO);
+		sym->MaxNameLen = 500;
+		IMAGEHLP_LINE64 line;
+		memset(&line, 0, sizeof(line));
+		line.SizeOfStruct = sizeof(line);
+		DWORD lineDisp = 0;
+		if(SymFromAddr(proc, frame.AddrPC.Offset, &disp, sym)){
+			if(SymGetLineFromAddr64(proc, frame.AddrPC.Offset, &lineDisp, &line))
+				CrashLog("  #%d %s  (%s:%lu)\n", depth, sym->Name, line.FileName, line.LineNumber);
+			else
+				CrashLog("  #%d %s\n", depth, sym->Name);
+		}else
+			CrashLog("  #%d %p\n", depth, (void*)frame.AddrPC.Offset);
+	}
+	if(gLoadTest)
+		LoadTestReport();
+	_exit(3);
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+void LoadTestInstallCrashHandler(void)
+{
+	SetUnhandledExceptionFilter(LoadTestExceptionFilter);
+}
+#else
+void LoadTestInstallCrashHandler(void) {}
+#endif
+
+void LoadTestFinish(const char *status)
+{
+	LoadTestLog("%s\n", status);
+	LoadTestReport();
+	fflush(nil);
+	_exit(0);
+}
+
 #ifndef MASTER
 void re3_assert(const char *expr, const char *filename, unsigned int lineno, const char *func)
 {
+	CrashLog("ASSERT failed: %s at %s:%u in %s\n", expr, filename, lineno, func);
+	if(gLoadTest){
+		LoadTestLog("LOADTEST FAIL assert(%s) at %s:%u in %s\n", expr, filename, lineno, func);
+		LoadTestReport();
+		_exit(2);
+	}
 #ifdef _WIN32
 	int nCode;
 

@@ -270,6 +270,11 @@ CPathFind::AllocatePathFindInfoMem(int16 numPathGroups)
 void
 CPathFind::RegisterMapObject(CTreadable *mapObject)
 {
+	if(m_numMapObjects >= NUM_MAPOBJECTS){
+		printf("NUM_MAPOBJECTS (%d) needs increasing\n", NUM_MAPOBJECTS);
+		assert(0);
+		return;
+	}
 	m_mapObjects[m_numMapObjects++] = mapObject;
 }
 
@@ -277,6 +282,11 @@ void
 CPathFind::StoreNodeInfoPed(int16 id, int16 node, int8 type, int8 next, int16 x, int16 y, int16 z, int16 width, bool crossing)
 {
 	int i, j;
+
+	if(id < 0 || id >= PATHNODESIZE || node < 0 || node >= 12){
+		printf("StoreNodeInfoPed: id %d node %d out of range (PATHNODESIZE %d)\n", id, node, PATHNODESIZE);
+		return;
+	}
 
 	i = id*12 + node;
 	InfoForTilePeds[i].type = type;
@@ -304,6 +314,11 @@ void
 CPathFind::StoreNodeInfoCar(int16 id, int16 node, int8 type, int8 next, int16 x, int16 y, int16 z, int16 width, int8 numLeft, int8 numRight)
 {
 	int i, j;
+
+	if(id < 0 || id >= PATHNODESIZE || node < 0 || node >= 12){
+		printf("StoreNodeInfoCar: id %d node %d out of range (PATHNODESIZE %d)\n", id, node, PATHNODESIZE);
+		return;
+	}
 
 	i = id*12 + node;
 	InfoForTileCars[i].type = type;
@@ -579,6 +594,11 @@ CPathFind::PreparePathDataForType(uint8 type, CTempNode *tempnodes, CPathInfoFor
 					objectpathinfo[start + j].z,
 					i,
 					&CoorsXFormed);
+				if(m_numPathNodes >= NUM_PATHNODES){
+					printf("NUM_PATHNODES (%d) needs increasing\n", NUM_PATHNODES);
+					assert(0);
+					return;
+				}
 				m_pathNodes[m_numPathNodes].SetPosition(CoorsXFormed);
 				OBJECTINDEX(m_numPathNodes) = i;
 				m_pathNodes[m_numPathNodes].unkBits = 1;
@@ -680,6 +700,11 @@ CPathFind::PreparePathDataForType(uint8 type, CTempNode *tempnodes, CPathInfoFor
 
 			// Add link to other side of the external
 			// NB this clears the flags in MIAMI
+			if(m_numConnections >= NUM_PATHCONNECTIONS){
+				printf("NUM_PATHCONNECTIONS (%d) needs increasing\n", NUM_PATHCONNECTIONS);
+				assert(0);
+				return;
+			}
 			if(tempnodes[j].link1 == i)
 				m_connections[m_numConnections] = tempnodes[j].link2;
 			else if(tempnodes[j].link2 == i)
@@ -705,6 +730,11 @@ CPathFind::PreparePathDataForType(uint8 type, CTempNode *tempnodes, CPathInfoFor
 				}
 				// k is m_numCarPathLinks+1 if we found one
 				if(k == m_numCarPathLinks){
+					if(m_numCarPathLinks >= NUM_CARPATHLINKS){
+						printf("NUM_CARPATHLINKS (%d) needs increasing\n", NUM_CARPATHLINKS);
+						assert(0);
+						return;
+					}
 					m_carPathLinks[m_numCarPathLinks].dir.x = tempnodes[j].dirX;
 					m_carPathLinks[m_numCarPathLinks].dir.y = tempnodes[j].dirY;
 					m_carPathLinks[m_numCarPathLinks].pos.x = tempnodes[j].pos.x;
@@ -742,6 +772,11 @@ CPathFind::PreparePathDataForType(uint8 type, CTempNode *tempnodes, CPathInfoFor
 			   objectpathinfo[jstart + jseg].next == iseg){
 				// Found a link between i and jConnectionSetCrossesRoad
 				// NB this clears the flags in MIAMI
+				if(m_numConnections >= NUM_PATHCONNECTIONS){
+					printf("NUM_PATHCONNECTIONS (%d) needs increasing\n", NUM_PATHCONNECTIONS);
+					assert(0);
+					return;
+				}
 				m_connections[m_numConnections] = j;
 				dist = (m_pathNodes[i].GetPosition() - m_pathNodes[j].GetPosition()).Magnitude();
 				m_distances[m_numConnections] = dist;
@@ -771,6 +806,11 @@ CPathFind::PreparePathDataForType(uint8 type, CTempNode *tempnodes, CPathInfoFor
 					}
 					// k is m_numCarPathLinks+1 if we found one
 					if(k == m_numCarPathLinks){
+						if(m_numCarPathLinks >= NUM_CARPATHLINKS){
+							printf("NUM_CARPATHLINKS (%d) needs increasing\n", NUM_CARPATHLINKS);
+							assert(0);
+							return;
+						}
 						m_carPathLinks[m_numCarPathLinks].dir.x = dx;
 						m_carPathLinks[m_numCarPathLinks].dir.y = dy;
 						m_carPathLinks[m_numCarPathLinks].pos.x = posx;

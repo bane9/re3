@@ -219,8 +219,7 @@ int8 CRunningScript::ProcessCommands300To399(int32 command)
 		char label[12];
 		CTheScripts::ReadTextLabelFromScript(&m_nIp, label);
 		int zone = CTheZones::FindZoneByLabelAndReturnIndex(label);
-		if (zone != -1)
-			m_nIp += KEY_LENGTH_IN_SCRIPT;
+		m_nIp += KEY_LENGTH_IN_SCRIPT;
 		CVector pos = pPed->bInVehicle ? pPed->m_pMyVehicle->GetPosition() : pPed->GetPosition();
 		UpdateCompareFlag(CTheZones::PointLiesWithinZone(&pos, CTheZones::GetZone(zone)));
 		return 0;

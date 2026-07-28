@@ -1,95 +1,65 @@
 {
+  "version": "2.0.0",
   "tasks": [
     {
-      "args": ["--with-librw", "gmake2"],
-      "command": "./premake5Linux",
-      "label": "Premake (Linux)",
-      "problemMatcher": "$gcc",
-      "type": "shell"
-    },
-    {
-      "args": ["--with-librw", "gmake2"],
-      "command": "premake5",
-      "label": "Premake (macOS)",
-      "problemMatcher": "$gcc",
-      "type": "shell"
-    },
-    {
+      "label": "Windows: Build (Debug)",
+      "type": "process",
+      "command": "powershell.exe",
       "args": [
-        "-j5",
-        "config=debug_linux-amd64-librw_gl3_glfw-oal",
-        "verbose=1"
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command",
+        "$vswhere='C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe'; $msbuild=(& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1); if(-not $msbuild){ throw 'MSBuild not found (install Visual Studio with the C++ workload)' }; & $msbuild 'build\\re3.sln' -t:re3 -p:Configuration=Debug -p:Platform=win-amd64-librw_gl3_glfw-oal -m -nologo"
       ],
-      "command": "make",
-      "dependsOn": "Premake (Linux)",
-      "group": {
-        "isDefault": true,
-        "kind": "build"
-      },
-      "label": "Compile (Debug Linux x64)",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
-      "problemMatcher": "$gcc",
-      "type": "shell"
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile",
+      "group": "build"
     },
     {
+      "label": "Windows: Build & Deploy (Debug)",
+      "type": "process",
+      "command": "powershell.exe",
       "args": [
-        "-j5",
-        "config=release_linux-amd64-librw_gl3_glfw-oal",
-        "verbose=1"
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command",
+        "$gta='C:\\Program Files (x86)\\Steam\\steamapps\\common\\Grand Theft Auto 3'; Copy-Item -Force 'bin\\win-amd64-librw_gl3_glfw-oal\\Debug\\re3.exe' (Join-Path $gta 're3.exe'); Copy-Item -Force 'bin\\win-amd64-librw_gl3_glfw-oal\\Debug\\re3.pdb' (Join-Path $gta 're3.pdb'); Write-Host ('Deployed Debug build to ' + $gta)"
       ],
-      "command": "make",
-      "dependsOn": "Premake (Linux)",
-      "group": {
-        "isDefault": true,
-        "kind": "build"
-      },
-      "label": "Compile (Release Linux x64)",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
-      "problemMatcher": "$gcc",
-      "type": "shell"
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "Windows: Build (Debug)",
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": "build"
     },
     {
+      "label": "Windows: Build (Release)",
+      "type": "process",
+      "command": "powershell.exe",
       "args": [
-        "-j5",
-        "config=debug_macosx-amd64-librw_gl3_glfw-oal",
-        "verbose=1"
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command",
+        "$vswhere='C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe'; $msbuild=(& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1); if(-not $msbuild){ throw 'MSBuild not found (install Visual Studio with the C++ workload)' }; & $msbuild 'build\\re3.sln' -t:re3 -p:Configuration=Release -p:Platform=win-amd64-librw_gl3_glfw-oal -m -nologo"
       ],
-      "command": "make",
-      "dependsOn": "Premake (macOS)",
-      "group": {
-        "isDefault": true,
-        "kind": "build"
-      },
-      "label": "Compile (Debug macOS x64)",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
-      "problemMatcher": "$gcc",
-      "type": "shell"
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile",
+      "group": "build"
     },
     {
+      "label": "Windows: Build & Deploy (Release)",
+      "type": "process",
+      "command": "powershell.exe",
       "args": [
-        "-j5",
-        "config=release_macosx-amd64-librw_gl3_glfw-oal",
-        "verbose=1"
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command",
+        "$gta='C:\\Program Files (x86)\\Steam\\steamapps\\common\\Grand Theft Auto 3'; Copy-Item -Force 'bin\\win-amd64-librw_gl3_glfw-oal\\Release\\re3.exe' (Join-Path $gta 're3.exe'); Copy-Item -Force 'bin\\win-amd64-librw_gl3_glfw-oal\\Release\\re3.pdb' (Join-Path $gta 're3.pdb'); Write-Host ('Deployed Release build to ' + $gta)"
       ],
-      "command": "make",
-      "dependsOn": "Premake (macOS)",
-      "group": {
-        "isDefault": true,
-        "kind": "build"
-      },
-      "label": "Compile (Release macOS x64)",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
-      "problemMatcher": "$gcc",
-      "type": "shell"
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "Windows: Build (Release)",
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
     }
-  ],
-  "version": "2.0.0"
+  ]
 }

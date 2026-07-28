@@ -78,7 +78,7 @@ CAnimViewer::Initialise(void) {
 	TheCamera.Cams[TheCamera.ActiveCam].Distance = 5.0f;
 
 	ThePaths.Init();
-	ThePaths.AllocatePathFindInfoMem(4500);
+	ThePaths.AllocatePathFindInfoMem(PATHNODESIZE);
 	CCollision::Init();
 	CWorld::Initialise();
 	mod_HandlingManager.Initialise();

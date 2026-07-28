@@ -11,8 +11,9 @@
 #include "SaveBuf.h"
 
 #ifdef COMPATIBLE_SAVES
-#define ZONEARRAY_SAVE_SIZE 0xAF0
-#define MAPZONEARRAY_SAVE_SIZE 0x578
+#define ONEZONE_SAVE_SIZE 56
+#define ZONEARRAY_SAVE_SIZE (NUMZONES * ONEZONE_SAVE_SIZE)
+#define MAPZONEARRAY_SAVE_SIZE (NUMMAPZONES * ONEZONE_SAVE_SIZE)
 #else
 #define ZONEARRAY_SAVE_SIZE sizeof(ZoneArray)
 #define MAPZONEARRAY_SAVE_SIZE sizeof(MapZoneArray)
@@ -27,6 +28,7 @@ int16 CTheZones::AudioZoneArray[NUMAUDIOZONES];
 uint16 CTheZones::TotalNumberOfMapZones;
 uint16 CTheZones::TotalNumberOfZones;
 CZone CTheZones::ZoneArray[NUMZONES];
+CZone CTheZones::InvalidZone;
 CZone CTheZones::MapZoneArray[NUMMAPZONES];
 uint16 CTheZones::TotalNumberOfZoneInfos;
 CZoneInfo CTheZones::ZoneInfoArray[2*NUMZONES];
@@ -72,6 +74,12 @@ CTheZones::Init(void)
 
 	for(i = 0; i < NUMZONES; i++)
 		memset(&ZoneArray[i], 0, sizeof(CZone));
+
+	memset(&InvalidZone, 0, sizeof(CZone));
+	InvalidZone.minx = InvalidZone.miny = InvalidZone.minz = 1.0f;
+	InvalidZone.maxx = InvalidZone.maxy = InvalidZone.maxz = -1.0f;
+	InvalidZone.zoneinfoDay = InvalidZone.zoneinfoNight = 2*NUMZONES - 1;
+	InvalidZone.level = LEVEL_GENERIC;
 
 	CZoneInfo *zonei;
 	int x = 1000/6;
@@ -157,6 +165,12 @@ CTheZones::CreateZone(char *name, eZoneType type,
 
 	// make upper case
 	for(p = name; *p; p++) if(islower(*p)) *p = toupper(*p);
+
+	if(TotalNumberOfZones >= NUMZONES || TotalNumberOfZoneInfos+1 >= 2*NUMZONES){
+		printf("NUMZONES (%d) needs increasing\n", NUMZONES);
+		assert(0);
+		return;
+	}
 
 	// add zone
 	strncpy(tmpname, name, 7);

@@ -160,8 +160,7 @@ int8 CRunningScript::ProcessCommands800To899(int32 command)
 		char zone[KEY_LENGTH_IN_SCRIPT];
 		CTheScripts::ReadTextLabelFromScript(&m_nIp, zone);
 		int zone_id = CTheZones::FindZoneByLabelAndReturnIndex(zone);
-		if (zone_id != -1)
-			m_nIp += KEY_LENGTH_IN_SCRIPT;
+		m_nIp += KEY_LENGTH_IN_SCRIPT;
 		CZone* pZone = CTheZones::GetZone(zone_id);
 		CollectParameters(&m_nIp, 1);
 		int handle = -1;
@@ -679,8 +678,7 @@ int8 CRunningScript::ProcessCommands800To899(int32 command)
 		char zone[KEY_LENGTH_IN_SCRIPT];
 		CTheScripts::ReadTextLabelFromScript(&m_nIp, zone);
 		int zone_id = CTheZones::FindZoneByLabelAndReturnIndex(zone);
-		if (zone_id != -1)
-			m_nIp += KEY_LENGTH_IN_SCRIPT;
+		m_nIp += KEY_LENGTH_IN_SCRIPT;
 		CZone* pZone = CTheZones::GetZone(zone_id);
 		UpdateCompareFlag(CExplosion::TestForExplosionInArea((eExplosionType)ScriptParams[0],
 			pZone->minx, pZone->maxx, pZone->miny, pZone->maxy, pZone->minz, pZone->maxz));

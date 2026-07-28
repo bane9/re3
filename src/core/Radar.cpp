@@ -445,6 +445,8 @@ void CRadar::Draw3dMarkers()
 			case BLIP_CAR:
 			{
 				CEntity *entity = CPools::GetVehiclePool()->GetAt(ms_RadarTrace[i].m_nEntityHandle);
+				if (entity == nil || CModelInfo::GetColModel(entity->GetModelIndex()) == nil)
+					break;
 				if (ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_BOTH || ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_MARKER_ONLY) {
 					CVector pos = entity->GetPosition();
 					pos.z += 1.2f * CModelInfo::GetColModel(entity->GetModelIndex())->boundingBox.max.z + 2.5f;
@@ -459,6 +461,8 @@ void CRadar::Draw3dMarkers()
 					if (((CPed*)entity)->InVehicle())
 						entity = ((CPed * )entity)->m_pMyVehicle;
 				}
+				if (entity == nil)
+					break;
 				if (ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_BOTH || ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_MARKER_ONLY) {
 					CVector pos = entity->GetPosition();
 					pos.z += 3.0f;
@@ -469,6 +473,8 @@ void CRadar::Draw3dMarkers()
 			case BLIP_OBJECT:
 			{
 				CEntity *entity = CPools::GetObjectPool()->GetAt(ms_RadarTrace[i].m_nEntityHandle);
+				if (entity == nil || CModelInfo::GetColModel(entity->GetModelIndex()) == nil)
+					break;
 				if (ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_BOTH || ms_RadarTrace[i].m_eBlipDisplay == BLIP_DISPLAY_MARKER_ONLY) {
 					CVector pos = entity->GetPosition();
 					pos.z += CModelInfo::GetColModel(entity->GetModelIndex())->boundingBox.max.z + 1.0f + 1.0f;
@@ -1213,6 +1219,10 @@ int CRadar::SetCoordBlip(eBlipType type, CVector pos, int32 color, eBlipDisplay 
 int CRadar::SetEntityBlip(eBlipType type, int32 handle, int32 color, eBlipDisplay display)
 {
 	int nextBlip;
+
+	if (handle == -1)
+		return -1;
+
 	for (nextBlip = 0; nextBlip < NUMRADARBLIPS; nextBlip++) {
 		if (!ms_RadarTrace[nextBlip].m_bInUse)
 			break;

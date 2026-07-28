@@ -19,10 +19,12 @@
 #endif
 
 #ifdef COMPATIBLE_SAVES
-#define PHONEINFO_SAVE_SIZE 0xA30
+#define ONEPHONE_SAVE_SIZE 52
+#define PHONEINFO_SAVE_SIZE (2 * sizeof(int32) + NUMPHONES * ONEPHONE_SAVE_SIZE)
 #else
 #define PHONEINFO_SAVE_SIZE sizeof(CPhoneInfo)
 #endif
+#define PHONES_IN_SAVE NUMPHONES
 
 CPhoneInfo gPhoneInfo;
 
@@ -275,10 +277,10 @@ INITSAVEBUF
 			ignoreOtherPhones = true;
 	}
 #else
-	m_nMax = max;
+	m_nMax = Min(NUMPHONES, max);
 	m_nScriptPhonesMax = scriptPhonesMax;
 
-	for (int i = 0; i < NUMPHONES; i++) {
+	for (int i = 0; i < PHONES_IN_SAVE; i++) {
 #ifdef COMPATIBLE_SAVES
 		LoadPhone(m_aPhones[i], buf);
 #else
@@ -414,7 +416,7 @@ INITSAVEBUF
 #ifdef PEDS_REPORT_CRIMES_ON_PHONE
 	for (int phoneId = 0; phoneId < 50; phoneId++) { // We can do it without touching saves
 #else
-	for (int phoneId = 0; phoneId < NUMPHONES; phoneId++) {
+	for (int phoneId = 0; phoneId < PHONES_IN_SAVE; phoneId++) {
 #endif
 #ifdef COMPATIBLE_SAVES
 		WriteSaveBuf(buf, m_aPhones[phoneId].m_vecPos);

@@ -451,7 +451,7 @@ bool CGame::Initialise(const char* datFile)
 	TheCamera.SetRwCamera(Scene.camera);
 	CDebug::DebugInitTextBuffer();
 	ThePaths.Init();
-	ThePaths.AllocatePathFindInfoMem(4500);
+	ThePaths.AllocatePathFindInfoMem(PATHNODESIZE);
 	CWeather::Init();
 	CCullZones::Init();
 	CCollision::Init();
@@ -555,14 +555,6 @@ bool CGame::Initialise(const char* datFile)
 	if(currLevel != LEVEL_COMMERCIAL) CFileLoader::LoadCollisionFromDatFile(LEVEL_COMMERCIAL);
 	if(currLevel != LEVEL_SUBURBAN)   CFileLoader::LoadCollisionFromDatFile(LEVEL_SUBURBAN);
 	CCollision::bAlreadyLoaded = true;
-	{
-		int n = CPools::GetBuildingPool()->GetSize();
-		for(int i = 0; i < n; i++){
-			CBuilding *b = CPools::GetBuildingPool()->GetSlot(i);
-			if(b)
-				CStreaming::RequestModel(b->GetModelIndex(), 0);
-		}
-	}
 #endif
 	CStreaming::RequestBigBuildings(LEVEL_GENERIC);
 	CStreaming::LoadAllRequestedModels(false);
@@ -1084,7 +1076,7 @@ void CGame::Process(void)
 		CPopulation::Update();
 		CWeapon::UpdateWeapons();
 		if (!CCutsceneMgr::IsRunning())
-			CTheCarGenerators::Process();
+				CTheCarGenerators::Process();
 		if (!CReplay::IsPlayingBack())
 			CCranes::UpdateCranes();
 		CClouds::Update();
@@ -1117,7 +1109,7 @@ void CGame::Process(void)
 		gPhoneInfo.Update();
 		if (!CReplay::IsPlayingBack())
 		{
-			PUSH_MEMID(MEMID_CARS);
+				PUSH_MEMID(MEMID_CARS);
 			CCarCtrl::GenerateRandomCars();
 			CRoadBlocks::GenerateRoadBlocks();
 			CCarCtrl::RemoveDistantCars();

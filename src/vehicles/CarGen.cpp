@@ -218,6 +218,11 @@ void CTheCarGenerators::Process()
 
 int32 CTheCarGenerators::CreateCarGenerator(float x, float y, float z, float angle, int32 mi, int16 color1, int16 color2, uint8 force, uint8 alarm, uint8 lock, uint16 min_delay, uint16 max_delay)
 {
+	if (NumOfCarGenerators >= NUM_CARGENS) {
+		printf("NUM_CARGENS (%d) needs increasing\n", NUM_CARGENS);
+		assert(0);
+		return NUM_CARGENS - 1;
+	}
 	CarGeneratorArray[NumOfCarGenerators].Setup(x, y, z, angle, mi, color1, color2, force, alarm, lock, min_delay, max_delay);
 	return NumOfCarGenerators++;
 }

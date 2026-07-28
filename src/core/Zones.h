@@ -75,7 +75,8 @@ public:
 	                          float minx, float miny, float minz,
 	                          float maxx, float maxy, float maxz,
 	                          eLevelName level);
-	static CZone *GetZone(uint16 i) { return &ZoneArray[i]; }
+	static CZone InvalidZone;
+	static CZone *GetZone(int i) { return (i >= 0 && i < NUMZONES) ? &ZoneArray[i] : &InvalidZone; }
 	static CZone *GetAudioZone(uint16 i) { return &ZoneArray[AudioZoneArray[i]]; }
 	static void PostZoneCreation(void);
 	static void InsertZoneIntoZoneHierarchy(CZone *zone);

@@ -264,7 +264,11 @@ CCutsceneMgr::SetupCutsceneToStart(void)
 	ms_cutsceneOffset.z++;
 
 	for (int i = ms_numCutsceneObjs - 1; i >= 0; i--) {
-		assert(RwObjectGetType(ms_pCutsceneObjects[i]->m_rwObject) == rpCLUMP);
+		if (ms_pCutsceneObjects[i] == nil || ms_pCutsceneObjects[i]->m_rwObject == nil ||
+		    RwObjectGetType(ms_pCutsceneObjects[i]->m_rwObject) != rpCLUMP) {
+			CrashLog("cutscene object %d has no clump, skipping\n", i);
+			continue;
+		}
 		if (CAnimBlendAssociation *pAnimBlendAssoc = RpAnimBlendClumpGetFirstAssociation((RpClump*)ms_pCutsceneObjects[i]->m_rwObject)) {
 			assert(pAnimBlendAssoc->hierarchy->sequences[0].HasTranslation());
 			ms_pCutsceneObjects[i]->SetPosition(ms_cutsceneOffset + ((KeyFrameTrans*)pAnimBlendAssoc->hierarchy->sequences[0].GetKeyFrame(0))->translation);
@@ -302,7 +306,16 @@ CCutsceneMgr::SetCutsceneAnim(const char *animName, CObject *pObject)
 CCutsceneHead *
 CCutsceneMgr::AddCutsceneHead(CObject *pObject, int modelId)
 {
+	if (ms_numCutsceneObjs >= NUMCUTSCENEOBJECTS) {
+		PoolProblemLog("NUMCUTSCENEOBJECTS (%d) needs increasing (head)\n", NUMCUTSCENEOBJECTS);
+		return nil;
+	}
+
 	CCutsceneHead *pHead = new CCutsceneHead(pObject);
+	if (pHead == nil) {
+		PoolProblemLog("object pool full creating cutscene head\n");
+		return nil;
+	}
 	pHead->SetModelIndex(modelId);
 	CWorld::Add(pHead);
 	ms_pCutsceneObjects[ms_numCutsceneObjs++] = pHead;
@@ -333,7 +346,16 @@ CCutsceneMgr::CreateCutsceneObject(int modelId)
 		pColModel->boundingBox.max = CVector(radius, radius, radius);
 	}
 
+	if (ms_numCutsceneObjs >= NUMCUTSCENEOBJECTS) {
+		PoolProblemLog("NUMCUTSCENEOBJECTS (%d) needs increasing (object)\n", NUMCUTSCENEOBJECTS);
+		return nil;
+	}
+
 	pCutsceneObject = new CCutsceneObject();
+	if (pCutsceneObject == nil) {
+		PoolProblemLog("object pool full creating cutscene object\n");
+		return nil;
+	}
 	pCutsceneObject->SetModelIndex(modelId);
 	ms_pCutsceneObjects[ms_numCutsceneObjs++] = pCutsceneObject;
 	return pCutsceneObject;
@@ -348,6 +370,8 @@ CCutsceneMgr::DeleteCutsceneData(void)
 	ms_useLodMultiplier = false;
 
 	for (--ms_numCutsceneObjs; ms_numCutsceneObjs >= 0; ms_numCutsceneObjs--) {
+		if (ms_pCutsceneObjects[ms_numCutsceneObjs] == nil)
+			continue;
 		CWorld::Remove(ms_pCutsceneObjects[ms_numCutsceneObjs]);
 		ms_pCutsceneObjects[ms_numCutsceneObjs]->DeleteRwObject();
 		delete ms_pCutsceneObjects[ms_numCutsceneObjs];
