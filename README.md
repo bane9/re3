@@ -22,31 +22,26 @@ Total disk needed: a few GB for Visual Studio + the repo + the game.
 
 ---
 
-## 1. Clone the repository (with submodules)
+## 1. Clone the repository
 
-The renderer (`librw`) and audio codecs are **git submodules**, so you must clone **recursively**.
-Open *Git Bash* or a terminal and run:
+The renderer (`librw`) is **bundled in this repository** (see
+[vendor/librw/VENDORED.md](vendor/librw/VENDORED.md)), so a plain clone is all you need —
+no submodule setup:
 
 ```sh
-git clone --recursive https://github.com/bane9/re3.git
+git clone https://github.com/bane9/re3.git
 cd re3
 ```
 
-If you already cloned without `--recursive`, pull the submodules in:
-
-```sh
-git submodule update --init --recursive
-```
-
-> If `vendor/librw` is empty, the build will fail with `Cannot open include file: 'rw.h'`.
-> That always means the submodules weren't checked out — run the command above.
+> The `vendor/ogg`, `vendor/opus` and `vendor/opusfile` submodules are only needed if you
+> build with the optional `--with-opus` flag. The normal build described here doesn't use them.
 
 ---
 
 ## 2. Download GLFW (required for the OpenGL build)
 
 The OpenGL build links against a prebuilt **GLFW 3.3.2** for windowing/input. It is **not** a
-submodule, so download it manually:
+part of this repository, so download it manually:
 
 1. Download **`glfw-3.3.2.bin.WIN64.zip`**:
    https://github.com/glfw/glfw/releases/download/3.3.2/glfw-3.3.2.bin.WIN64.zip
@@ -162,7 +157,7 @@ That's it — the game runs on the freshly compiled build.
 ## Quick reference (TL;DR)
 
 ```sh
-git clone --recursive https://github.com/bane9/re3.git
+git clone https://github.com/bane9/re3.git
 cd re3
 # extract glfw-3.3.2.bin.WIN64.zip into vendor/  -> vendor/glfw-3.3.2.bin.WIN64/
 premake-vs2019.cmd
@@ -181,7 +176,7 @@ premake-vs2019.cmd
 
 | Problem | Fix |
 |---|---|
-| `Cannot open include file: 'rw.h'` | Submodules not checked out — run `git submodule update --init --recursive`. |
+| `Cannot open include file: 'rw.h'` | `vendor/librw/` is missing or incomplete. It is bundled in this repo — restore it (e.g. `git checkout vendor/librw`) and re-run `premake-vs2019.cmd`. |
 | `Cannot open include file: 'GLFW/glfw3.h'` | GLFW not extracted to `vendor/glfw-3.3.2.bin.WIN64/` (step 2). |
 | `LNK1181: cannot open input file 'rw.lib'` | `librw` didn't build — re-run `premake-vs2019.cmd`, then rebuild the whole solution. |
 | Build errors after pulling new code | Re-run `premake-vs2019.cmd` to regenerate the projects. |
